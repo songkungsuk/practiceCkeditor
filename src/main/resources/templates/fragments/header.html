@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" th:fragment="HeaderFragment"
+      xml:lang="ko"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{fragments/config :: ConfigFragment}"/>
+<!-- header.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  let header = {
+    userinfo: {},
+    fn_init: function () {
+      $.ajax({
+        url: `/api/v1/user/getAuth`,
+        type: 'GET',
+        beforeSend: function (xhr) {
+          common.getHeaderToken(xhr);
+        },
+        success: function (data, status, res) {
+          common.saveAuthTokenToLoacalStorage(res);
+          if (data) {
+            $('.btn-w.body-l.dn').removeClass('dn');
+          }
+        },
+        error: function (error) {
+          ajaxError(error);
+        },
+      });
+    },
+    fn_event: function () {
+      $('#logoutBtn').on('click', function () {
+        ui_common.fn_showConfirmModal("알림", "로그아웃을 하시겠습니까?");
+        ui_common.fn_setNewEvent('btnConfirm', function () {
+          logout();
+        });
+      });
+
+      $('#main').on('click', function () {
+        common.fn_movePage('/main')
+      });
+    }
+  }
+  $(function () {
+    header.fn_init();
+    header.fn_event();
+  })
+
+  const logout = () => {
+    localStorage.clear();
+    $.ajax({
+      url: '/logout',
+      method: 'GET',
+      success: function (data) {
+        if (data) {
+          common.fn_movePage('/login');
+        }
+      },
+      error: function (error) {
+        console.log(error)
+      }
+    });
+  }
+</script>
+<!-- header.html script e -->
+<header>
+  <wrap class="wrap">
+    <header class="header h56 df-jcsb">
+      <div class="hd-left df-aic jcc">
+        <div class="hd-logo pr60">
+          <img src="/assets/img/runtime_logo.png" style="cursor: pointer" id="main">
+        </div>
+        <div class="space-x-2">
+          <button class="btn-w body-l" onclick="common.fn_movePage('/dashBoard')">대시보드</button>
+          <button class="btn-w body-l dn" onclick="common.fn_movePage('/management')">UserManagement</button>
+          <button class="btn-w body-l dn" onclick="common.fn_movePage('/masterData')">MasterData</button>
+        </div>
+      </div>
+
+      <div class="df-aic space-x-4">
+        <span class="material-icons fz-40 dn" id="accountCircle">account_circle</span>
+        <p class="body-l" id="headerUserName"></p>
+        <button class="btn-orange200 body-l" id="logoutBtn">로그아웃</button>
+      </div>
+    </header>
+  </wrap>
+</header>
+</html>

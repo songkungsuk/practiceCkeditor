@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="no-cache" http-equiv="cache-control"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- header s -->
+<th:block th:replace="~{fragments/header :: HeaderFragment}"></th:block>
+<!-- header e -->
+<!-- userManagement.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  let total = '';
+  const pageSize = 10;
+  let userManagement = {
+    fn_init: function () {
+      pageMove(1);
+    },
+    fn_event: function () {
+      $("#searchBtn").on('click', function () {
+        pageMove(1);
+      });
+      $('#srchOption').on('change', function () {
+        if ($(this).val() === 'srchTtl') {
+          $('#searchInput').prop('placeholder', '제목을 입력하세요.');
+        }
+        if ($(this).val() === 'srchRegUserId') {
+          $('#searchInput').prop('placeholder', '작성자를 입력하세요.');
+        }
+      });
+      $("#searchInput").on('keyup', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          $("#searchBtn").trigger('click');
+        }
+      });
+    }
+  }
+
+  $(function () {
+    userManagement.fn_init();
+    userManagement.fn_event();
+  });
+
+  const getList = (pageNum, pageSize, srchOption, srchWord) => {
+    const data = {
+      pageNum, pageSize, srchOption, srchWord
+    }
+    $.ajax({
+      url: '/api/v3/admin/list',
+      type: 'POST',
+      data: JSON.stringify(data),
+      contentType: 'application/json',
+      beforeSend: function (xhr) {
+        ui_common.fn_showLoading();
+        common.getHeaderToken(xhr);
+      },
+      success: function (data, status, res) {
+        common.saveAuthTokenToLoacalStorage(res);
+        console.log(data);
+        if (data.list.length > 0) {
+          total = data.total;
+          makeTableRow(data.list);
+          makePageNumber(data.pageNum, data.total, data.pageSize);
+          $('#paginationNumDiv').removeClass('dn');
+          $('#noResult').addClass('dn');
+        } else {
+          $('#resultBody').empty();
+          makePageNumber(1, 1, 10);
+          let newRow = $('<tr>').css('cursor', 'default');
+          let newCell = $('<td>').addClass('pb20').attr('colspan', '6');
+          let newDiv = $('<div>').addClass('df-jcc pt20 pb20');
+          let newImg = $('<img>').addClass('w100 h100 bdrs8').attr('src',
+              '/assets/img/img_profile_icon.jpg');
+          let newSpan = $('<span>').addClass('title-l').text('유저가 없습니다. (멋짐 폭발)');
+          newDiv.append(newImg);
+          newCell.append(newDiv);
+          newCell.append(newSpan);
+          newRow.append(newCell);
+          $('#resultBody').append(newRow); // 예시로 #yourTableId는 테이블의 ID입니다.
+        }
+      },
+      error: function (error) {
+        ajaxError(error);
+      },
+      complete: function () {
+        ui_common.fn_hideLoading();
+      }
+    });
+  }
+
+  const makePageNumber = (currentPage, totalCnt, pageSize) => {
+    const totalPage = Math.ceil(totalCnt / pageSize);
+    const pageGroup = Math.ceil(currentPage / 10);
+
+    const first = (pageGroup - 1) * 10 + 1;
+    const last = Math.min(pageGroup * 10, totalPage);
+
+    const pages = [];
+
+    for (let i = first; i <= last; i++) {
+      const onclickAttr = `pageMove(${i})`;
+      const isActive = i === currentPage ? 'active' : '';
+      const button = `<button class="page-btn ${isActive}" data-page="${i}" onclick="${onclickAttr}">${i}</button>`;
+      pages.push(button);
+    }
+
+    $('#paginationNumDiv').html(pages.join(''));
+  }
+
+  const makeTableRow = (list) => {
+    $('#resultBody').empty();
+    list.forEach(item => {
+      let $boardPk = $('<td>').text(`${item.usiNum}`)
+      let $ttl = $('<td>').addClass('tal eps1').text(`${item.usiId}`).on('click',
+          () => detailUser(item.usiNum));
+      let $spanImg = $('<span>').addClass('ico-crown');
+      let $spanText = $('<span>').addClass('pl4').text(`${item.usiName}`);
+      let $regUserId = $('<td>').addClass('df-jcc h60').append($spanImg).append($spanText);
+      let $regDate = $('<td>').text(`${item.usiPhoneNum}`);
+
+      let $readCnt = $('<td>').text(`${item.usiAuth}`);
+      let newRow = $('<tr>').append($boardPk, $ttl, $regUserId, $regDate, $readCnt);
+      $('#resultBody').append(newRow);
+    });
+  }
+
+  const pageMove = (pageNum) => {
+    const srchOption = $('#srchOption').val();
+    const srchWord = $('#searchInput').val();
+    const currentPage = Number($('#paginationNumDiv').find('button.active').text());
+    const lastPage = Number($('#paginationNumDiv').children().last().text());
+
+    switch (pageNum) {
+      case 'first':
+        pageNum = 1;
+        break;
+      case 'previous':
+        pageNum = Math.max(currentPage - 1, 1);
+        break;
+      case 'next':
+        pageNum = ((currentPage + 1) !== lastPage) ? (currentPage + 1) : (lastPage + 1);
+        break;
+      case 'last':
+        pageNum = getTotalPage(total, pageSize);
+        break;
+      default:
+        pageNum = Number(pageNum);
+    }
+    getList(pageNum, pageSize, srchOption, srchWord);
+  }
+
+  const detailUser = (boardPk) => {
+    let url = `/user-detail/${boardPk}`
+    common.fn_movePage(url);
+  };
+
+  const getTotalPage = (totalCnt, pageSize) => {
+    return Math.ceil(totalCnt / pageSize);
+  }
+
+</script>
+<!-- board.html script e -->
+<head>
+  <title>게시판</title>
+</head>
+<body>
+<wrap class="wrap">
+  <main class="main">
+    <section class="sec01">
+      <div class="title-l">유저 목록</div>
+
+      <table border="1" class="board-table mt20">
+        <thead>
+        <tr>
+          <th class="w50">No</th>
+          <th class="tal">아이디</th>
+          <th class="w100">이름</th>
+          <th class="w120">핸드폰번호</th>
+          <th class="w80">권한</th>
+        </tr>
+        </thead>
+
+        <tbody id="resultBody">
+        </tbody>
+      </table>
+
+      <div class="df-jcc pt40">
+        <div class="pagination df-jcc">
+          <button class="first" onclick="pageMove('first')"></button>
+          <button class="prv" onclick="pageMove('previous')"></button>
+          <div id="paginationNumDiv">
+          </div>
+          <button class="next" onclick="pageMove('next')"></button>
+          <button class="last" onclick="pageMove('last')"></button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</wrap>
+</body>
+</html>

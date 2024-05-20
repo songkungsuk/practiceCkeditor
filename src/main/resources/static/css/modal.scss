@@ -1,0 +1,77 @@
+.modal500 {
+  width: 500px;
+  background: var(--white);
+  box-shadow: 0 0 2px var(--dark600);
+  border-radius: 15px;
+  position: fixed;
+  top: 1%;
+  z-index: 999;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  .modal-top {
+    padding: 24px;
+    h3 {
+      padding: 0 0 18px 0;
+    }
+    .inp-box {
+      width: 100%;
+      padding: 12px 0 0 0;
+      > .tit {
+        font-size: 1rem;
+        padding: 0 0 8px 0;
+        font-weight: 400;
+      }
+      span {
+        display: block;
+        color: var(--alert);
+      }
+
+      // 비밀번호
+      .inp-box-pw {
+        width: 430px;
+        position: relative;
+        .icon-on-off {
+          position: absolute;
+          top: 15px;
+          right: 12px;
+          width: 14px;
+          height: 14px;
+          cursor: pointer;
+          p {
+            display: block;
+            width: 14px;
+            height: 14px;
+            &.icon-pw-off {
+              background: url("../assets/icon/ico_eye-slash.png");
+            }
+            &.icon-pw-on {
+              background: url("../assets/icon/ico_eye.png");
+            }
+
+          }
+        }
+        input:focus {
+          outline: none;
+          border: 1px solid var(--orange500);
+        }
+
+        span {
+          display: block;
+          color: var(--alert);
+        }
+      }
+    }
+  }
+  .modal-bottom {
+    border-top: 1px solid var(--light100);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+  }
+}
+
+/* 모달 뒷 배경 */
+.modal-dim{width: 100%; height: 100%; background : rgba(0,0,0,.5); position: fixed; z-index: 100; top:0; left: 0;}
+.modal-dim.off{display: none;}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko" th:fragment="ConfigFragment" xml:lang="ko"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+  <meta content="no-cache" http-equiv="cache-control"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta charset="UTF-8"/>
+  <!-- bootstrap s-->
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+  <!-- bootstrap e-->
+  <!-- common css s -->
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/icon.css}">
+  <link rel="stylesheet" th:href="@{/css/responsive.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/reset.css}">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/modal.css}">
+  <link rel="stylesheet" th:href="@{/css/login.css}">
+  <!-- jquery-ui s -->
+  <link rel="stylesheet" th:href="@{/webjars/jquery-ui/1.13.0/jquery-ui.min.css}">
+  <!-- jquery-ui e -->
+  <!-- common css e -->
+  <!-- contents css s -->
+  <th:block layout:fragment="css"></th:block>
+  <!-- contents css e -->
+  <!-- common js s -->
+  <!-- jquery s -->
+  <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+  <!-- jquery e -->
+  <!-- jquery-ui s -->
+  <script th:src="@{/webjars/jquery-ui/1.13.0/jquery-ui.min.js}"></script>
+  <!-- jquery-ui e -->
+  <!-- echart s -->
+  <script th:src="@{/vendor/echart/echarts.min.js}"></script>
+  <!-- echart e-->
+  <!-- 다음 kakao 주소 API s -->
+  <script th:src="@{//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js}"></script>
+  <!-- 다음 kakao 주소 API e -->
+  <script th:src="@{/js/common/common.js}"></script>
+  <script th:src="@{/js/style.js}"></script>
+  <script th:src="@{/js/uploadAdapter.js}"></script>
+  <!-- common js e -->
+</head>
+
+<!-- alert modal s-->
+<th:block th:replace="~{common/modal/alertModal}"></th:block>
+<!-- alert modal e-->
+<!-- info modal s-->
+<th:block th:replace="~{common/modal/infoModal}"></th:block>
+<!-- info modal e-->
+<!-- confirm modal s-->
+<th:block th:replace="~{common/modal/confirmModal}"></th:block>
+<!-- confirm modal e-->
+<!-- loading s -->
+<th:block th:replace="~{common/loading}"></th:block>
+<!-- loading e -->
+<div class="modal-dim off" id="modalDim"></div>
+</html>
+

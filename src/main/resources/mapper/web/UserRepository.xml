@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sbl.demo.sblproject.repository.web.UserRepository">
+  <select id="selectByUsiId" resultType="com.sbl.demo.sblproject.domain.User">
+    SELECT USI_NUM,
+           USI_ID,
+           CONCAT('{noop}', USI_PWD) AS USI_PWD,
+           USI_NAME,
+           USI_PHONE_NUM,
+           USI_EMAIL,
+           USI_AUTH
+    FROM user_info
+    WHERE USI_ID = #{usiId}
+      AND ACTIVE = 'Y';
+  </select>
+
+  <select id="selectUserList" resultType="com.sbl.demo.sblproject.domain.User">
+    SELECT USI_NUM,
+           USI_ID,
+           USI_NAME,
+           USI_PHONE_NUM,
+           USI_EMAIL,
+           USI_AUTH
+    FROM user_info
+    WHERE ACTIVE = 'Y'
+  </select>
+
+  <select id="selectByUsiNum" resultType="com.sbl.demo.sblproject.domain.web.dto.UserDto">
+    SELECT USI_NUM,
+           USI_ID,
+           USI_NAME,
+           USI_PHONE_NUM,
+           USI_EMAIL,
+           USI_AUTH
+    FROM user_info
+    WHERE USI_NUM = #{usiNum}
+  </select>
+
+  <insert id="register">
+    INSERT INTO user_info(USI_ID,
+                          USI_PWD,
+                          USI_NAME,
+                          USI_PHONE_NUM,
+                          USI_EMAIL,
+                          USI_LAST_LGIN,
+                          USI_AUTH,
+                          CREDAT,
+                          CRETIM,
+                          LMODAT,
+                          LMOTIM,
+                          ACTIVE)
+    VALUES (#{usiId}, #{usiPwd}, #{usiName}, #{usiPhoneNum}, #{usiEmail}, SYSDATE(), #{usiAuth},
+            DATE_FORMAT(SYSDATE(), '%Y%m%d'), DATE_FORMAT(SYSDATE(), '%H%i%s'),
+            DATE_FORMAT(SYSDATE(), '%Y%m%d'), DATE_FORMAT(SYSDATE(), '%H%i%s'), 'Y');
+  </insert>
+
+  <update id="updateUser">
+    UPDATE user_info
+    <set>
+      <if test="usiPwd != null and usiPwd != ''">
+        USI_PWD =#{usiPwd},
+      </if>
+      <if test="usiName != null and usiName !=''">
+        USI_NAME = #{usiName},
+      </if>
+      <if test="usiPhoneNum != null and usiPhoneNum !=''">
+        USI_PHONE_NUM = #{usiPhoneNum},
+      </if>
+      <if test="usiEmail != null and usiEmail !=''">
+        USI_EMAIL = #{usiEmail},
+      </if>
+      <if test="usiAuth != null and usiAuth !=''">
+        USI_AUTH = #{usiAuth},
+      </if>
+      LMODAT = DATE_FORMAT(SYSDATE(), '%Y%m%d'),
+      LMOTIM = DATE_FORMAT(SYSDATE(), '%H%i%s')
+    </set>
+    WHERE USI_NUM = #{usiNum}
+  </update>
+
+  <update id="deleteUser">
+    UPDATE user_info
+    SET ACTIVE = 'N',
+        LMODAT = DATE_FORMAT(SYSDATE(), '%Y%m%d'),
+        LMOTIM = DATE_FORMAT(SYSDATE(), '%H%i%s')
+    WHERE USI_NUM = #{usiNum}
+  </update>
+
+  <sql id="Search_Clause_Board">
+    <if test="srchWord != null and srchWord != ''">
+      <choose>
+        <when test="srchOption == 'srchTtl'.toString()">
+          AND USI_ID LIKE CONCAT('%',#{srchWord},'%')
+        </when>
+        <when test="srchOption == 'srchRegUserId'.toString()">
+          AND USI_NAME LIKE CONCAT('%',#{srchWord},'%')
+        </when>
+      </choose>
+    </if>
+  </sql>
+</mapper>

@@ -1,0 +1,103 @@
+.sec01 {
+  width: 100%;
+  .inp-box {
+    width: 100%;
+    padding: 12px 0 0 0;
+    > .tit {
+      font-size: 1rem;
+      padding: 0 0 8px 0;
+      font-weight: 400;
+    }
+    span {
+      display: block;
+      color: var(--alert);
+    }
+
+    // 비밀번호
+    .inp-box-pw {
+      width: 430px;
+      position: relative;
+      .icon-on-off {
+        position: absolute;
+        top: 15px;
+        right: 12px;
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+        p {
+          display: block;
+          width: 14px;
+          height: 14px;
+          &.icon-pw-off {
+            background: url("../assets/icon/ico_eye-slash.png");
+          }
+          &.icon-pw-on {
+            background: url("../assets/icon/ico_eye.png");
+          }
+
+        }
+      }
+      input:focus {
+        outline: none;
+        border: 1px solid var(--orange500);
+      }
+
+      span {
+        display: block;
+        color: var(--alert);
+      }
+    }
+  }
+}
+
+
+.sec02 {
+  .list {
+    width: 33.333%;
+    background: var(--orange100);
+    border-radius: 12px;
+    padding: 24px;
+    span {
+      font-size: 1.25rem;
+      font-weight: 600;
+      padding: 0 0 4px 0;
+    }
+    .list-txt {
+      width: 100%;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 5; /* 여기서 줄 수를 조정하세요 */
+      overflow: hidden;
+      height: 150px;
+    }
+  }
+}
+
+.board-table {
+  width: 100%;
+  table-layout: fixed;
+  thead{
+    width: 100%;
+    color: var(--dark600);
+    tr {
+      height: 40px;
+      border: 1px solid var(--light100);
+      background: var(--light300);
+      th {
+        text-align: center;
+      }
+    }
+  }
+
+  tbody {
+    width: 100%;
+    text-align: center;
+    tr{
+      cursor: pointer;
+      height: 60px;
+      border-bottom: 1px solid var(--light100);
+      td {
+      }
+    }
+  }
+}

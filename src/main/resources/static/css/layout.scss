@@ -1,0 +1,113 @@
+.wrap {
+  width: 100%;
+  .header {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    height: 56px;
+    min-height: 56px;
+  }
+  .main {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+}
+
+.tit {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+
+.login-wrap {
+  width: 100%;
+  .login-main {
+    width: 100%;
+    margin: auto;
+    max-width: 448px;
+    .tit {
+      width: 100%;
+    }
+    //로그인 아이디
+    .inp-id {
+      &::before {
+        pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_person.png");
+      }
+    }
+
+    //로그인 pw
+    .inp-pw {
+      &::before {
+        pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_lock-outline.png");
+      }
+    }
+
+    //회원가입
+    .inp-gaib-id {
+      &::before {
+                pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_person.png");
+      }
+    }
+
+    //이메일
+    .inp-gaib-email {
+      &::before {
+        pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_email.png");
+      }
+
+    }
+
+    //이름
+    .inp-gaib-name {
+      &::before {
+        pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_name.png");
+      }
+    }
+
+    //주소
+    .inp-gaib-addr01 {
+      &::before {
+        pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_addr.png");
+      }
+    }
+
+    //주소상세
+    .inp-gaib-addr02 {
+      &::before {
+        pointer-events: none; /* 클릭 이벤트 방지 */
+        background: url("../assets/icon/ico_addr.png");
+      }
+    }
+
+
+    .btn-login {
+      width: 100%;
+      background: var(--blue500);
+      border-radius: 12px;
+      color: var(--white);
+      padding: 10px 10px;
+    }
+
+    .copyright {
+      margin-top: 2rem;
+      white-space: nowrap;
+      height: 12px;
+      opacity: 0.7;
+      text-align: center;
+      color: var(--dark600);
+      p {
+        font-size: 0.75rem; /* 12px */
+        line-height: 1rem; /* 16px */
+      }
+    }
+
+  //메인 끝
+  }
+}

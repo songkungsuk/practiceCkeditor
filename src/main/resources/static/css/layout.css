@@ -1,0 +1,82 @@
+@charset "UTF-8";
+.wrap {
+  width: 100%;
+}
+.wrap .header {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  height: 56px;
+  min-height: 56px;
+}
+.wrap .main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.tit {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.login-wrap {
+  width: 100%;
+}
+.login-wrap .login-main {
+  width: 100%;
+  margin: auto;
+  max-width: 448px;
+}
+.login-wrap .login-main .tit {
+  width: 100%;
+}
+.login-wrap .login-main .inp-id::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_person.png");
+}
+.login-wrap .login-main .inp-pw::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_lock-outline.png");
+}
+.login-wrap .login-main .inp-gaib-id::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_person.png");
+}
+.login-wrap .login-main .inp-gaib-email::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_email.png");
+}
+.login-wrap .login-main .inp-gaib-name::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_name.png");
+}
+.login-wrap .login-main .inp-gaib-addr01::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_addr.png");
+}
+.login-wrap .login-main .inp-gaib-addr02::before {
+  pointer-events: none; /* 클릭 이벤트 방지 */
+  background: url("../assets/icon/ico_addr.png");
+}
+.login-wrap .login-main .btn-login {
+  width: 100%;
+  background: var(--blue500);
+  border-radius: 12px;
+  color: var(--white);
+  padding: 10px 10px;
+}
+.login-wrap .login-main .copyright {
+  margin-top: 2rem;
+  white-space: nowrap;
+  height: 12px;
+  opacity: 0.7;
+  text-align: center;
+  color: var(--dark600);
+}
+.login-wrap .login-main .copyright p {
+  font-size: 0.75rem; /* 12px */
+  line-height: 1rem; /* 16px */
+}
+
+/*# sourceMappingURL=layout.css.map */

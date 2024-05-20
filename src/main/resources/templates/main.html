@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<!-- header s -->
+<th:block th:replace="~{fragments/header :: HeaderFragment}"></th:block>
+<!-- header e -->
+<!-- main.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  let main = {
+    fn_event: function () {
+      $('#ojtGuideBtn').on('click', function () {
+        const url = 'https://www.notion.so/runtimecoltd/64ebe18202c449409c2bd3b3500d4786';
+        window.open(url);
+      });
+      $('#rtBoardBtn').on('click', function () {
+        const url = 'https://www.notion.so/runtimecoltd/837de3279f0e49f0b664b19a91f42246?v=dddaf35712634b4b9f0f1d66645883b4';
+        window.open(url);
+      });
+      $('#ojtPjtBtn').on('click', function () {
+        const url = 'https://www.notion.so/runtimecoltd/Runtime-OJT-ef08a0f1c0054973bfbfa1622e8d5a48';
+        window.open(url);
+      });
+    }
+  }
+  $(function () {
+    main.fn_event();
+  })
+</script>
+<!-- main.html script e -->
+<head>
+  <title>메인 페이지</title>
+</head>
+<body>
+<wrap class="wrap">
+  <main class="main">
+    <section class="sec01 df-jcc pb120 pt120">
+      <p class="H1">SBL Demo Permission</p>
+    </section>
+    <section class="sec02">
+      <div class="df-jcsb space-x-8 pt12">
+        <div class="list">
+          <span>APQR</span>
+          <div class="list-txt">
+            - 한 해 동안의 제품 생산 및 품질 데이터를 종합적으로 검토하여 제품의 품질을 평가하고,
+            생산 및 품질 시스템의 적합성을 확인하는 프로세스
+            <br>
+            - 데이터 수집, 데이터 평가, 결과 보고 단계를 갖는다.
+          </div>
+        </div>
+        <div class="list">
+          <span>PR</span>
+          <div class="list-txt">
+            - 의약품 제조 시설에서 사용되는 시스템(예: 생산 시스템, 품질 관리 시스템 등)의 정기적인 검토 및 평가 내용을 문서화한 것
+            <br>
+            - 제조 및 품질 관리 프로세스의 효율성, 정확성, 규정 준수 여부 등을 확인하기 위해 사용
+            <br>
+            - 검토 범위, 검토 항목, 검토 방법, 검토 결과, 추가 조치 및 계획에 대한 내용을 갖는다.
+          </div>
+        </div>
+        <div class="list">
+          <span>관리자 페이지</span>
+          <div class="list-txt">
+            - 이 페이지는 액세스토큰 리프레쉬토큰 동작하는 기능 만들어서 보여드리기
+            <br>
+            - 유저 매니저 어드민 권한 나누어서 각각 동작하도록하게 하기
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</wrap>
+</body>
+</html>

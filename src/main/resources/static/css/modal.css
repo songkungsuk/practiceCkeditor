@@ -1,0 +1,88 @@
+@charset "UTF-8";
+.modal500 {
+  width: 500px;
+  background: var(--white);
+  box-shadow: 0 0 2px var(--dark600);
+  border-radius: 15px;
+  position: fixed;
+  top: 1%;
+  z-index: 999;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal500 .modal-top {
+  padding: 24px;
+}
+.modal500 .modal-top h3 {
+  padding: 0 0 18px 0;
+}
+.modal500 .modal-top .inp-box {
+  width: 100%;
+  padding: 12px 0 0 0;
+}
+.modal500 .modal-top .inp-box > .tit {
+  font-size: 1rem;
+  padding: 0 0 8px 0;
+  font-weight: 400;
+}
+.modal500 .modal-top .inp-box span {
+  display: block;
+  color: var(--alert);
+}
+.modal500 .modal-top .inp-box .inp-box-pw {
+  width: 430px;
+  position: relative;
+}
+.modal500 .modal-top .inp-box .inp-box-pw .icon-on-off {
+  position: absolute;
+  top: 15px;
+  right: 12px;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+.modal500 .modal-top .inp-box .inp-box-pw .icon-on-off p {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+.modal500 .modal-top .inp-box .inp-box-pw .icon-on-off p.icon-pw-off {
+  background: url("../assets/icon/ico_eye-slash.png");
+}
+.modal500 .modal-top .inp-box .inp-box-pw .icon-on-off p.icon-pw-on {
+  background: url("../assets/icon/ico_eye.png");
+}
+.modal500 .modal-top .inp-box .inp-box-pw input:focus {
+  outline: none;
+  border: 1px solid var(--orange500);
+}
+.modal500 .modal-top .inp-box .inp-box-pw span {
+  display: block;
+  color: var(--alert);
+}
+.modal500 .modal-bottom {
+  border-top: 1px solid var(--light100);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+/* 모달 뒷 배경 */
+.modal-dim {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+}
+
+.modal-dim.off {
+  display: none;
+}
+
+
+/*# sourceMappingURL=modal.css.map */

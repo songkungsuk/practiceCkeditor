@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="no-cache" http-equiv="cache-control"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- header s -->
+<th:block th:replace="~{fragments/header :: HeaderFragment}"></th:block>
+<!-- header e -->
+<!-- boardWrite.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  let dashBoard = {
+    fn_init: function () {
+      // Initialize the echarts instance based on the prepared dom
+      let myChart = echarts.init(document.querySelector('#chart'));
+
+      // Specify the configuration items and data for the chart
+      let option = {
+        series: [{
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: true,
+          label: {
+            show: true, // 데이터 레이블은 숨김
+          },
+          labelLine: {
+            show: true
+          },
+          data: [
+            {value: 335, name: '진행완료'},
+            {value: 310, name: '진행중'},
+          ],
+        }]
+      };
+      myChart.setOption(option);
+
+    },
+    fn_event: function () {
+      /*
+      // 이제부터 토큰값넣어서 원하는 url로 401안뜨게하기..
+      $.ajax({
+        url: `/api/v1/board/insert`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(board),
+        beforeSend: function (xhr) {
+          ui_common.fn_showLoading();
+          common.getHeaderToken(xhr);
+        },
+        success: function (data, status, res) {
+          common.saveAuthTokenToLoacalStorage(res);
+          if (data) {
+            common.fn_movePage('/board');
+          }
+        },
+        error: function (error) {
+          ajaxError(error);
+        },
+        complete: function () {
+          ui_common.fn_hideLoading();
+        }
+      });
+*/
+      $('#chartImage').on('click', function () {
+        const chartElement = document.querySelector('#chart');
+        const canvas = chartElement.querySelectorAll('canvas')[0];
+        const imageData = canvas.toDataURL('image/png')
+
+        const tempLink = document.createElement('a');
+        tempLink.href = imageData;
+        tempLink.download = 'chart.jpg';
+        tempLink.click();
+
+      });
+
+      $('#sendMail').on('click', function () {
+        $.ajax({
+          url: `/api/v1/user/email`,
+          type: 'POST',
+          beforeSend: function (xhr) {
+            ui_common.fn_showLoading();
+            common.getHeaderToken(xhr);
+          },
+          success: function (data, status, res) {
+            common.saveAuthTokenToLoacalStorage(res);
+            console.log(data);
+          },
+          error: function (error) {
+            ajaxError(error);
+          },
+          complete: function () {
+            ui_common.fn_hideLoading();
+          }
+        });
+      });
+    }
+  }
+  $(function () {
+    dashBoard.fn_init();
+    dashBoard.fn_event();
+  });
+</script>
+<!-- DashBoard.html script e -->
+<head>
+  <title>게시판 작성</title>
+</head>
+<body>
+<wrap class="wrap">
+  <main class="main">
+    <section class="sec01">
+      <div>
+        <span class="ico-pix">nest_eco_leaf</span>
+        <span>대시보드</span>
+      </div>
+
+      <div class="df-jcsb pt8">
+        <div class="df">
+          <div class="prv-b" id="cancel1">
+            <span class="ico-arrow-04"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-box" id="chart">
+
+      </div>
+
+
+    </section>
+    <button class="btn-orange200 body-l" id="chartImage">이미지 파일화</button>
+    <button class="btn-orange200 body-l" id="sendMail">메일 보내기</button>
+  </main>
+</wrap>
+</body>
+</html>

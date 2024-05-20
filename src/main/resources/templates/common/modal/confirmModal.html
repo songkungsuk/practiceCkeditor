@@ -1,0 +1,49 @@
+<div class="modal500" id="confirmModal">
+  <div class="modal-top">
+    <h3 class="title-l" id="confirmModalTitle"></h3>
+    <p id="confirmModalMessage"></p>
+  </div>
+  <div class="modal-bottom">
+    <div class="space-x-2">
+      <button class="btn-g modal-close" onclick="ui_common.fn_hideModal('confirmModal')">취소</button>
+      <button class="btn-orange" id="btnConfirm">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal500" id="deleteModal">
+  <div class="modal-top">
+    <h3 class="df title-l"><p id="deleteModalTitle"></p></h3>
+    <p class="pb12" id="deleteModalMessage"></p>
+    <input class="inp tac" id="deleteInput"
+           oninput="ui_common.fn_checkText('btnDelete', this.value, 'DELETE')" placeholder="입력하세요"
+           type="text">
+    <p class="pt12">* 박스에 "DELETE"를 입력하시면 [삭제] 버튼이 활성화 됩니다.</p>
+  </div>
+  <div class="modal-bottom space-x-2">
+    <button class="btn-g w50p" onclick="ui_common.fn_hideModal('deleteModal')">취소</button>
+    <button class="btn-orange w50p" id="btnDelete">삭제</button>
+  </div>
+</div>
+
+<script th:inline="javascript" type="text/javascript">
+  let confirmModal = {
+    fn_init: function () {
+
+    },
+    fn_event: function () {
+      $('#deleteInput').on('keyup', function (e) {
+        if ($(this).val() === 'DELETE') {
+          if (e.key === 'Enter' || e.keyCode === 13) {
+            $("#btnDelete").trigger('click');
+          }
+        }
+
+      })
+    }
+  }
+  $(function () {
+    confirmModal.fn_init();
+    confirmModal.fn_event();
+  })
+</script>

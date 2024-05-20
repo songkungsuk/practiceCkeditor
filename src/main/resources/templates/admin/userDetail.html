@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="no-cache" http-equiv="cache-control"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- header s -->
+<th:block th:replace="~{fragments/header :: HeaderFragment}"></th:block>
+<!-- header e -->
+<!-- userDetail.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  /*
+  * 1. formData를 활용한 파일 송수신과 업로드
+  * 2. 컨벤션에 맞는 코드를 통해 협업을 이해..
+  * */
+  let userDetail = {
+    user: {},
+    fn_init: function () {
+
+      const currentURL = window.location.toString();
+      const splitURL = currentURL.split("/");
+      const usiNum = splitURL[splitURL.length - 1];
+
+      $.ajax({
+        url: `/api/v1/user/info?usiNum=${usiNum}`,
+        type: 'GET',
+        beforeSend: function (xhr) {
+          common.getHeaderToken(xhr);
+        },
+        success: function (data, status, res) {
+          common.saveAuthTokenToLoacalStorage(res);
+          console.log(data);
+          userDetail.user = {
+            ...data,
+            password: '',
+            passwordCheck: '',
+
+          }
+          $('#userId').val(data.usiId);
+          $('#phoneNumber').val(data.usiPhoneNum);
+          $('#email').val(data.usiEmail);
+          $('#userName').val(data.usiName);
+          $("#userAuth").val(data.usiAuth);
+        },
+        error: function (error) {
+          ajaxError(error);
+        },
+      });
+
+    },
+    fn_event: function () {
+      // 취소 버튼을 눌럿을 시
+      $('#btnCancel').on('click', function () {
+        ui_common.fn_showConfirmModal('취소 하시겠습니까?', '취소 할 경우 편집한 내용이 저장되지 않습니다');
+        ui_common.fn_setNewEvent('btnConfirm', function () {
+          ui_common.fn_hideModal('confirmModal');
+          location.reload();
+        });
+      });
+      // 수정 버튼을 눌럿을 시
+      $('#btnUpdate').on('click', function () {
+        // 변경된 데이터가 있는지 확인
+        let differentData = common.fn_compareObject(userDetail.user, getInputData());
+        const dataLength = Object.keys(differentData).length;
+        if (!dataLength) {
+          ui_common.fn_showAlertModal('알림', '변경 된 정보가 없습니다.');
+          return false;
+
+        } else {
+          if ($('#phoneNumber').val().trim().length < 6
+              && $('#phoneNumber').val().trim().length > 0) {
+            ui_common.fn_showAlertModal('알림', '휴대폰 번호는 5자 이상 입력해야 합니다.');
+            return false;
+          }
+          if (differentData.password !== differentData.passwordCheck) {
+            ui_common.fn_showAlertModal('비밀번호가 일치하지 않습니다', '새 비밀번호와, 새 비밀번호 확인 해주세요.');
+            $('#passwordCheckErrorSpan').removeClass('dn');
+            return false;
+          }
+          // validation 체크
+          if (!validation(differentData)) {
+            return false;
+          }
+          // 변경된 데이터가 있으면 수정
+          ui_common.fn_showConfirmModal('정보 수정', '해당 정보로 수정하시겠습니까?');
+          ui_common.fn_setNewEvent('btnConfirm', function () {
+            let differentData = common.fn_compareObject(userDetail.user, getInputData());
+            userUpdate(differentData);
+          });
+        }
+      });
+      // 토글 버튼을 클릭 시
+      $('.button[name=toggleBtn]').on('click', function () {
+        let $input = $(this).prev();
+        let $p = $(this).find('p');
+        common.fn_pwdToggleEvnet($input, $p);
+      });
+      // 비밀번호 변경 버튼 클릭 시
+      $('#pwdChange').on('click', function () {
+        $('#passwordModalErrorSpan').addClass('dn');
+        ui_common.fn_showModal('passwordModal');
+        $('#passwordConfirm').attr('data-command', 'changePassword');
+      });
+      // 회원 탈퇴 버튼 클릭 시
+      $('#deleteUser').on('click', function () {
+        $('#passwordModalErrorSpan').addClass('dn');
+        ui_common.fn_showModal('passwordModal');
+        $('#passwordConfirm').attr('data-command', 'deleteUser');
+      });
+      // 휴대폰 번호 입력 시
+      $('#phoneNumber').on('keyup', function (e) {
+        const phoneNumber = $(this).val();
+        const $span = $('#phoneNumberErrorSpan');
+        let formattedPhone = '';
+        // 숫자키 입력시에만 핸드폰 형식이 생김
+        if (!(e.keyCode >= 48 && e.keyCode <= 57
+            || e.keyCode >= 96 && e.keyCode <= 105)) {
+          formattedPhone = phoneNumber;
+          // 이상한 문자 넣으면 에러메세지 보여줍니다
+          if (!/^[0-9-]+$/.test(formattedPhone) && phoneNumber.length > 0) {
+            $span.removeClass('dn');
+          } else {
+            $span.addClass('dn');
+          }
+        } else {
+          // 숫자 키 입력 시 형식화 함수 호출
+          formattedPhone = formatPhoneNumber(phoneNumber);
+          // validation Check
+          common.fn_validateMobile(formattedPhone, $span);
+        }
+
+        // 변환된 핸드폰 번호는 Input 에 표시가됩니다.
+        $(this).val(formattedPhone);
+      });
+      // 비밀 번호 입력 시
+      $('#password').on('keyup', function (e) {
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]?)[a-zA-Z\d!@#$%^&*(),.?":{}|<>]{6,16}$/;
+        const passwordValue = $(this).val().trim();
+        const $span = $('#passwordErrorSpan');
+        common.fn_validateByRegex(passwordValue, $span, passwordRegex);
+        // 작성한 비밀번호가 변경되면 비밀번호 확인
+        const checkPassword = $('#passwordCheck').val().trim();
+        if (passwordValue === checkPassword) {
+          $('#passwordCheckErrorSpan').addClass('dn');
+        } else {
+          $('#passwordCheckErrorSpan').toggleClass('dn', false);
+        }
+
+      });
+      // 비밀 번호 확인 입력시
+      $('#passwordCheck').on('keyup', function () {
+        const passwordValue = $('#password').val().trim();
+        const checkPassword = $(this).val().trim();
+        if (passwordValue === checkPassword) {
+          $('#passwordCheckErrorSpan').addClass('dn');
+        } else {
+          $('#passwordCheckErrorSpan').toggleClass('dn', false);
+        }
+      })
+      // 이름 입력 시
+      $('#userName').on('keyup', function () {
+        const userNameRegex = /^[A-Za-z]{2,}$|^[\uAC00-\uD7A3]{2,30}$/;
+        const value = $(this).val();
+        const $span = $('#userNameErrorSpan');
+        common.fn_validateByRegex(value, $span, userNameRegex);
+      });
+      // 주소 값 변경시
+      $('#zipcd').on('change', function () {
+        const zipcdRegex = /\S+/;
+        const zipcdValue = $(this).val().trim();
+        const $span = $('#zipcdErrorSpan');
+        common.fn_validateByRegex(zipcdRegex, $span, zipcdValue);
+      });
+      $('#addr').on('change', function () {
+        const addrRegex = /\S+/;
+        const addrValue = $(this).val().trim();
+        const $span = $('#addrErrorSpan');
+        common.fn_validateByRegex(addrRegex, $span, addrValue);
+      });
+      // 상세주소 값 변경시
+      $('#addrDetail').on('keyup', function () {
+        const detailAddrRegex = /\S+/;
+        const detailAddrValue = $(this).val().trim();
+        const $span = $('#addrDetailErrorSpan');
+        common.fn_validateByRegex(detailAddrRegex, $span, detailAddrValue);
+      });
+      // 사진 추가 버튼 클릭시 트리거 이벤트
+      $('#addProfile').on('click', function () {
+        $('#profileUpload').trigger('click');
+      });
+      // 사진 추가가 된 경우 이미지 프리뷰
+      $('#profileUpload').on('change', function (event) {
+        $('#imgBox').addClass('dn');
+        $('#uploadImg').removeClass('dn');
+        $('#delAt').val('N');
+        $('#uploadedImg').attr('src', URL.createObjectURL(event.target.files[0]));
+      });
+      // 사진 지우기 버튼 눌럿을 때
+      $('#btnRemove').on('click', function () {
+        $('#imgBox').removeClass('dn');
+        $('#uploadImg').addClass('dn');
+        $('#profileUpload').val('');
+
+      });
+    }
+  }
+  $(function () {
+    userDetail.fn_init();
+    userDetail.fn_event();
+  })
+
+  // 조회 정보랑 비교하기위해 입력한값을 가져옵니다
+  function getInputData() {
+    let user = {...userDetail.user}
+    // 이메일
+    const $email = $('#email');
+    if ($email.val() !== '') {
+      user.usiEmail = $email.val();
+    }
+    // 핸드폰 번호
+    const $phoneNumber = $('#phoneNumber');
+    if ($phoneNumber.val() !== '') {
+      user.usiPhoneNum = $phoneNumber.val();
+    }
+    // 비밀 번호
+    const $password = $('#password');
+    if ($password.val() !== '') {
+      user.password = $password.val();
+      // 비밀번호 확인이랑 맞는지 확인하기위해 유저비빌번호를 변경햇다고 알려줍니다.
+      user.passwordCheck = 'changed';
+    }
+    // 비밀 번호 체크
+    const $passwordCheck = $('#passwordCheck');
+    if ($passwordCheck.val() !== '') {
+      user.passwordCheck = $passwordCheck.val();
+    }
+    // 이름
+    user.usiName = $('#userName').val();
+    // 권한
+    user.usiAuth = $("#userAuth").val();
+    return user;
+  }
+
+  // 사용자가 입력한 값을 핸드폰 번호로 바꾸어 줍니다
+  function formatPhoneNumber(phoneNumber) {
+    // 숫자 이외의 문자 제거
+    phoneNumber = phoneNumber.replace(/\D/g, '');
+
+    // 길이가 11자리 이상이면 11자리만 남김
+    if (phoneNumber.length > 11) {
+      phoneNumber = phoneNumber.slice(0, 11);
+    }
+
+    // 길이에 따라 형식 변경
+    let formattedPhoneNumber = '';
+    if (phoneNumber.length > 2) {
+      formattedPhoneNumber += phoneNumber.slice(0, 3) + '-';
+      if (phoneNumber.length > 6) {
+        formattedPhoneNumber += phoneNumber.slice(3, 7) + '-' + phoneNumber.slice(7);
+      } else {
+        formattedPhoneNumber += phoneNumber.slice(3);
+      }
+    } else {
+      formattedPhoneNumber = phoneNumber;
+    }
+
+    return formattedPhoneNumber;
+  }
+
+  // 유효값 검증용 변경한 필드값만 유저에 넣어서 비교
+  const validation = (user) => {
+    // 필드 목록들 [핸드폰, 비밀번호, 비밀번호체크, 유저이름, 주소들]
+    const fields = [
+      {id: 'phoneNumber', errorSpan: 'phoneNumberErrorSpan', name: 'moblphonNo'},
+      {id: 'password', errorSpan: 'passwordErrorSpan', name: 'password'},
+      {id: 'passwordCheck', errorSpan: 'passwordCheckErrorSpan', name: 'passwordCheck'},
+      {id: 'userName', errorSpan: 'userNameErrorSpan', name: 'userNm'},
+    ];
+    // 필드들의 값 , 에러메세지를 검사하여 해당하는 필드가 옳지 않거나 유효성에 맞지 않는 경우 true를 반환
+    const invalidField = fields.find(field => {
+      let isInvalidField = false;
+      // 변경한 필드 값만 검사
+      for (let key in user) {
+        if (key === field.name) {
+          let value;
+          // 핸드폰 번호는 선택이므로 비어있어도 됩니다
+          if (key === 'moblphonNo') {
+            value = $(`#${field.id}`).val().trim().length >= 0;
+          } else {
+            value = $(`#${field.id}`).val().trim().length > 0;
+          }
+          const hasError = $(`#${field.errorSpan}`).hasClass('dn');
+          isInvalidField = !(value && hasError);
+          break;
+        }
+      }
+      return isInvalidField;
+    });
+    // invalidField가 true 이면 잘못된 값이나 에러메세지가 존재한다는 뜻
+    if (invalidField) {
+      // 클래스 dn을 제거하면 에러메세지가 출력되는것을이용함
+      $(`#${invalidField.errorSpan}`).removeClass('dn');
+      $(`#${invalidField.id}`).focus();
+
+      return false;
+    }
+
+    return true;
+  }
+
+  const userUpdate = (data) => {
+    const currentURL = window.location.toString();
+    const splitURL = currentURL.split("/");
+    const usiNum = splitURL[splitURL.length - 1];
+
+    const user = {
+      ...data,
+      usiNum
+    }
+
+    $.ajax({
+      url: `/api/v3/admin/update`,
+      type: 'PATCH',
+      data: JSON.stringify(user),
+      contentType: 'application/json',
+      beforeSend: function (xhr) {
+        common.getHeaderToken(xhr);
+        ui_common.fn_showLoading();
+      },
+      success: function (data, status, res) {
+        common.saveAuthTokenToLoacalStorage(res);
+        console.log(data);
+        if (data) {
+          ui_common.fn_hideModal('confirmModal');
+          ui_common.fn_showAlertModal('회원 수정 완료', '회원 수정이 완료되었습니다');
+          ui_common.fn_setNewEvent('alertModal', function () {
+            location.reload();
+          });
+        }
+      },
+      error: function (error) {
+        ajaxError(error);
+      },
+      complete: function () {
+        ui_common.fn_hideLoading();
+      }
+    });
+  }
+
+</script>
+<!-- userInfo.html script e -->
+<head>
+  <title>정보 수정</title>
+</head>
+<body>
+<wrap class="wrap">
+  <main class="main">
+    <div class="df-jcsb w430 pt20 pb20" style="margin: 0 auto">
+      <span class="title-l">정보수정</span>
+      <div class="space-x-2">
+        <button class="btn-g" id="btnCancel">취소</button>
+        <button class="btn-orange" id="btnUpdate">수정</button>
+      </div>
+    </div>
+    <section class="sec01 df-jcc" style="flex-direction: column;">
+      <div class="add-photo w430">
+        <div class="body-l pb8 dn">프로필</div>
+        <div class="add-photo-box dn">
+          <div class="add-photo-imgbox" id="imgBox">
+            <img src="/assets/img/img_profile_icon.jpg"/>
+          </div>
+          <div class="add-photo-imgbox dn" id="uploadImg">
+            <img class="ico-account profile-h" id="uploadedImg" src=""/>
+            <div class="remove-photo" id="btnRemove"></div>
+          </div>
+          <label>
+            <input class="dn" id="delAt" type="hidden">
+            <input accept="image/*" class="dn add-file" id="profileUpload" multiple type="file"/>
+            <button class="btn-orange mt8 add-photo-file" id="addProfile">
+              <p class="pl4">사진추가</p>
+            </button>
+          </label>
+        </div>
+      </div>
+      <!-- 아이디 -->
+      <div class="inp-box w430">
+        <div class="body-l">아이디</div>
+        <div class="df-jcsb mt8">
+          <input class="inp" id="userId" maxlength="30" name="userName" placeholder="이름을 입력해주세요."
+                 type="text" disabled>
+        </div>
+        <span class="dn" id="userIdErrorSpan">아이디 입력을 해주세요.</span>
+      </div>
+
+
+      <!-- 비밀번호 변경 버튼 -->
+      <div class="title-m pt12 pb4 w430">비밀번호 변경</div>
+      <div class="w430">
+        <button class="btn-orange mt8" id="pwdChange">비밀번호 변경</button>
+      </div>
+
+      <!-- 새 비밀번호 변경 -->
+      <div class="inp-box w430 dn" id="changePassword">
+        <div class="tit">새 비밀번호</div>
+        <div class="inp-box-pw">
+          <input class="inp" id="password" maxlength="100" name="password"
+                 placeholder="6~16자의 영문,숫자,특수문자(선택) 조합" type="password">
+          <button class="icon-on-off" name="toggleBtn">
+            <p class="icon-pw-off"></p>
+          </button>
+          <span class="dn" id="passwordErrorSpan">6~16자의 영문/숫자/특수문자(선택) 조합으로 입력해주세요.</span>
+        </div>
+      </div>
+
+      <!-- 새 비밀번호 변경 확인 -->
+      <div class="inp-box w430 dn" id="checkPassword">
+        <div class="tit">새 비밀번호 확인</div>
+        <div class="inp-box-pw">
+          <input class="inp" id="passwordCheck" maxlength="100"
+                 name="passwordCheck"
+                 placeholder="새 비밀번호와 같은 비밀번호를 입력하세요" type="password">
+          <button class="icon-on-off" name="toggleBtn">
+            <p class="icon-pw-off"></p>
+          </button>
+          <span class="dn" id="passwordCheckErrorSpan">입력한 비밀번호가 일치하지않습니다.</span>
+        </div>
+      </div>
+
+      <!-- 이메일 -->
+      <div class="inp-box w430">
+        <div class="tit">이메일</div>
+        <div class="df-jcsb mt8">
+          <input class="inp" id="email" name="email" placeholder="이메일을 입력해주세요."
+                 type="text">
+        </div>
+      </div>
+
+      <!-- 휴대폰 번호 -->
+      <div class="inp-box w430">
+        <div class="body-l">휴대폰 번호</div>
+        <div class="df-jcsb mt8">
+          <input class="inp" id="phoneNumber" maxlength='13' name="phoneNumber"
+                 placeholder="휴대폰번호를 입력해주세요" type="text">
+        </div>
+        <span class="dn" id="phoneNumberErrorSpan">휴대폰 번호 형식이 올바르지 않습니다.</span>
+      </div>
+
+      <!-- 이름 -->
+      <div class="inp-box w430">
+        <div class="body-l">이름</div>
+        <div class="df-jcsb mt8">
+          <input class="inp" id="userName" maxlength="30" name="userName" placeholder="이름을 입력해주세요."
+                 type="text">
+        </div>
+        <span class="dn" id="userNameErrorSpan">이름은 2자이상의 영어 또는 한글만 입력가능합니다.</span>
+      </div>
+
+      <!-- 지번 -->
+      <div class="inp-box w430 dn">
+        <div class="body-l">주소</div>
+        <div class="df-jcsb mt8">
+          <input class="inp w80p" disabled id="zipcd" name="zipcd" placeholder="우편번호"
+                 type="text">
+          <button class="btn-g" onclick="fn_openDaumPostcode('layer','600','500');">주소 검색</button>
+        </div>
+        <span class="dn" id="zipcdErrorSpan">주소 검색 버튼으로 입력해주세요.</span>
+      </div>
+
+      <!-- 주소 -->
+      <div class="inp-box w430 dn">
+        <div class="df-jcsb mt4">
+          <input class="inp" disabled id="addr" name="addr" placeholder="주소" type="text">
+        </div>
+        <span class="dn" id="addrErrorSpan">주소 검색 버튼으로 입력해주세요.</span>
+      </div>
+
+      <!-- 주소 상세 -->
+      <div class="inp-box w430 dn">
+        <div class="df-jcsb mt4">
+          <input class="inp" id="addrDetail" maxlength="200" name="addrDetail"
+                 placeholder="상세주소를 입력해주세요." type="text">
+        </div>
+        <span class="dn" id="addrDetailErrorSpan">상세주소를 입력해주세요.</span>
+      </div>
+      <!--  권한 설정 -->
+      <div class="inp-box w430">
+        <div class="body-l">권한</div>
+        <div class="df-jcsb mt8">
+          <select class="inp" id="userAuth" name="userAuth">
+            <option value="ROLE_USER">사용자</option>
+            <option value="ROLE_MANAGER">매니저</option>
+            <option value="ROLE_ADMIN">관리자</option>
+          </select>
+        </div>
+        <span class="dn" id="userAuthErrorSpan">이름은 2자이상의 영어 또는 한글만 입력가능합니다.</span>
+      </div>
+
+      <div class="w430 pt12 pb100">
+        <button class="btn-orange-icon w100p" id="deleteUser"><p class="pl4">회원 삭제</p></button>
+      </div>
+    </section>
+  </main>
+</wrap>
+</body>
+<!-- password modal s-->
+<th:block th:replace="~{common/modal/passwordModal}"></th:block>
+<!-- password modal e-->
+<!-- 주소 검색 iframe을 넣을 element -->
+<div id="layer"
+     style="display:none; position:fixed; overflow:hidden; z-index:1; -webkit-overflow-scrolling:touch;"></div>
+</html>

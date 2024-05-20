@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="no-cache" http-equiv="cache-control"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<th:block th:replace="~{fragments/config :: ConfigFragment}"/>
+<!-- register.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  /*
+  * 1. validation 체크를 통한 유효한 값 구분
+  * 2. securityConfig 에서 허용한 WhiteList를 사용한 api 사용
+  * 3. 공통이해 및 활용
+  * */
+  let register = {
+    isUserIdCheck: false,
+    fn_init: function () {
+
+    },
+    fn_event: function () {
+      // 로그인 버튼 클릭 시
+      $('#loginBtn').on('click', function () {
+        common.fn_movePage('/login');
+      });
+      // 아이디 입력 시
+      $('#id').on('keyup', function () {
+        const userIdRegex = /^[a-z0-9]{5,12}$/;
+        const idValue = $(this).val().trim();
+        const $span = $('#idErrorSpan');
+        register.isUserIdCheck = false;
+        common.fn_validateByRegex(idValue, $span, userIdRegex);
+      });
+      // 비밀번호 입력 시
+      $('#password').on('keyup', function (e) {
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]?)[a-zA-Z\d!@#$%^&*(),.?":{}|<>]{6,16}$/;
+        const passwordValue = $(this).val().trim();
+        const $span = $('#passwordErrorSpan');
+        common.fn_validateByRegex(passwordValue, $span, passwordRegex);
+
+        // 비밀번호 확인도 같이 확인
+        const checkPassword = $('#checkPassword').val().trim();
+        if (passwordValue === checkPassword && passwordValue.length > 0) {
+          $('#checkPasswordErrorSpan').addClass('dn');
+        } else {
+          $('#checkPasswordErrorSpan').toggleClass('dn', false);
+        }
+
+      });
+      // 비밀번호 확인 입력 시
+      $('#checkPassword').on('keyup', function () {
+        const passwordValue = $('#password').val().trim();
+        const checkPassword = $(this).val().trim();
+        if (passwordValue === checkPassword) {
+          $('#checkPasswordErrorSpan').addClass('dn');
+        } else {
+          $('#checkPasswordErrorSpan').toggleClass('dn', false);
+        }
+      });
+      // 이메일 입력 시
+      $('#email').on('keyup', function () {
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i;
+        const emailValue = $(this).val().trim();
+        const $span = $('#emailErrorSpan');
+        common.fn_validateByRegex(emailValue, $span, emailRegex);
+      });
+      // 이름 입력 시
+      $('#userName').on('keyup', function () {
+        const userNameRegex = /^[A-Za-z]{2,}$|^[\uAC00-\uD7A3]{2,}$/;
+        const userNameValue = $(this).val().trim();
+        const $span = $('#userNameErrorSpan');
+        common.fn_validateByRegex(userNameValue, $span, userNameRegex);
+      });
+      // 비밀번호 토글 클릭시
+      $('button[name="toggleBtn"]').on('click', function () {
+        const $input = $(this).prev();
+        const $p = $(this).find('p');
+        common.fn_pwdToggleEvnet($input, $p);
+      });
+      // 주소 값 변경시
+      $('#zipcd').on('change', function () {
+        const zipcdRegex = /\S+/;
+        const zipcdValue = $(this).val().trim();
+        const $span = $('#zipcdErrorSpan');
+        common.fn_validateByRegex(zipcdRegex, $span, zipcdValue);
+      });
+      $('#addr').on('change', function () {
+        const addrRegex = /\S+/;
+        const addrValue = $(this).val().trim();
+        const $span = $('#addrErrorSpan');
+        common.fn_validateByRegex(addrRegex, $span, addrValue);
+      });
+
+      // 휴대폰 번호 입력 시
+      $('#detailAddr').on('keyup', function (e) {
+        const phoneNumber = $(this).val();
+        const $span = $('#detailAddrErrorSpan');
+        let formattedPhone = '';
+        // 숫자키 입력시에만 핸드폰 형식이 생김
+        if (!(e.keyCode >= 48 && e.keyCode <= 57
+            || e.keyCode >= 96 && e.keyCode <= 105)) {
+          formattedPhone = phoneNumber;
+          // 이상한 문자 넣으면 에러메세지 보여줍니다
+          if (!/^[0-9-]+$/.test(formattedPhone) && phoneNumber.length > 0) {
+            $span.removeClass('dn');
+          } else {
+            $span.addClass('dn');
+          }
+        } else {
+          // 숫자 키 입력 시 형식화 함수 호출
+          formattedPhone = formatPhoneNumber(phoneNumber);
+          // validation Check
+          common.fn_validateMobile(formattedPhone, $span);
+        }
+
+        // 변환된 핸드폰 번호는 Input 에 표시가됩니다.
+        $(this).val(formattedPhone);
+      });
+      // 중복확인 버튼 클릭시
+      $('#idCheckBtn').on('click', function () {
+        const userId = $('#id').val().trim();
+        if (userId.length === 0) {
+          ui_common.fn_showAlertModal('알림', '아이디를 입력해주세요.');
+          return false;
+        }
+        //ajax로 아이디 체크 진행
+        $.ajax({
+          url: `/api/v1/user/check-userId`,
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            userId
+          }),
+          success: function (data, status, res) {
+            if (data) {
+              ui_common.fn_showAlertModal('알림', '이미 존재하는 아이디 입니다.');
+            } else {
+              ui_common.fn_showAlertModal('알림', '사용 가능한 아이디 입니다.');
+              register.isUserIdCheck = true;
+            }
+          },
+          error: function (error) {
+            common.ajaxError(error);
+          }
+        })
+
+      })
+      // 회원가입 버튼 클릭시
+      $('#joinBtn').on('click', function () {
+        if (!validation()) {
+          return false;
+        }
+        // 비밀번호 확인을 제대로 햇는지 확인
+        if ($('#password').val() !== $('#checkPassword').val()) {
+          const $span = $('#checkPasswordErrorSpan');
+          $span.removeClass('dn');
+          $span.focus();
+          return false;
+        }
+
+        ui_common.fn_showConfirmModal("회원가입", "회원 가입을 하시겠습니까?");
+        // 회원가입 진행 확인 버튼을 클릭시
+        ui_common.fn_setNewEvent('btnConfirm', function () {
+          // 컨펌 모달 닫기
+          ui_common.fn_hideModal('confirmModal');
+
+          // 유저 객체에 데이터 담음
+          const usiId = $('#id').val();
+          const usiPwd = $('#password').val();
+          const usiName = $('#userName').val();
+          const usiEmail = $('#email').val();
+          const usiPhoneNum = $('#detailAddr').val();
+
+          const user = {
+            usiId,
+            usiPwd,
+            usiName,
+            usiEmail,
+            usiPhoneNum
+          }
+
+          // ajax로 회원가입 절차 진행
+          $.ajax({
+            url: '/api/v1/user/register',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(user),
+            beforeSend: function () {
+              ui_common.fn_showLoading();
+            },
+            success: function (data, status, res) {
+              if (data) {
+                ui_common.fn_showAlertModal('회원 가입이 완료되었습니다.', '로그인 페이지로 이동하여서 로그인 해주세요.');
+                ui_common.fn_setNewEvent('alertModal', function () {
+                  common.fn_movePage('/login');
+                });
+              } else {
+                ui_common.fn_showAlertModal('회원 가입 실패', '잘못된 값이 있을수도 있습니다.');
+                return false;
+              }
+
+            },
+            error: function (error) {
+              ajaxError(error);
+            },
+            complete: function () {
+              ui_common.fn_hideLoading();
+            }
+          });
+        });
+      });
+
+    }
+  }
+
+  // 사용자가 입력한 값을 핸드폰 번호로 바꾸어 줍니다
+  function formatPhoneNumber(phoneNumber) {
+    // 숫자 이외의 문자 제거
+    phoneNumber = phoneNumber.replace(/\D/g, '');
+
+    // 길이가 11자리 이상이면 11자리만 남김
+    if (phoneNumber.length > 11) {
+      phoneNumber = phoneNumber.slice(0, 11);
+    }
+
+    // 길이에 따라 형식 변경
+    let formattedPhoneNumber = '';
+    if (phoneNumber.length > 2) {
+      formattedPhoneNumber += phoneNumber.slice(0, 3) + '-';
+      if (phoneNumber.length > 6) {
+        formattedPhoneNumber += phoneNumber.slice(3, 7) + '-' + phoneNumber.slice(7);
+      } else {
+        formattedPhoneNumber += phoneNumber.slice(3);
+      }
+    } else {
+      formattedPhoneNumber = phoneNumber;
+    }
+
+    return formattedPhoneNumber;
+  }
+
+  //유효값 검증용
+  const validation = () => {
+    //필드 목록들 [아이디, 비밀번호, 비밀번호체크, 이메일, 유저이름, 주소들]
+    const fields = [
+      {id: 'id', errorSpan: 'idErrorSpan'},
+      {id: 'password', errorSpan: 'passwordErrorSpan'},
+      {id: 'checkPassword', errorSpan: 'checkPasswordErrorSpan'},
+      {id: 'email', errorSpan: 'emailErrorSpan'},
+      {id: 'userName', errorSpan: 'userNameErrorSpan'},
+      {id: 'detailAddr', errorSpan: 'detailAddrErrorSpan'}
+    ];
+    //필드들의 값 , 에러메세지를 검사하여 해당하는 필드가 옳지 않거나 유효성에 맞지 않는 경우 true를 반환
+    const invalidField = fields.find(field => {
+      const value = $(`#${field.id}`).val().trim().length > 0;
+      const hasError = $(`#${field.errorSpan}`).hasClass('dn');
+      return !(value && hasError);
+    });
+    // invalidField가 true 이면 잘못된 값이나 에러메세지가 존재한다는 뜻
+    if (invalidField) {
+      //클래스 dn을 제거하면 에러메세지가 출력되는것을이용함
+      $(`#${invalidField.errorSpan}`).removeClass('dn');
+      $(`#${invalidField.id}`).focus();
+      return false;
+    }
+
+    return true;
+  }
+
+  $(function () {
+        register.fn_init();
+        register.fn_event();
+      }
+  )
+
+
+</script>
+<!-- register.html script e -->
+<head>
+  <title>회원가입</title>
+</head>
+<body>
+<wrap class="login-wrap">
+  <main class="login-main pt55">
+    <div class="tit head-m pb24 mb40 bb">회원가입</div>
+
+    <!-- 아이디 -->
+    <div class="inp-gaib-box inp-id mb20">
+      <div class="df-jcsb">
+        <input class="inp-gaib w80p" id="id" name="id" placeholder="아이디를 입력해주세요." type="text">
+        <button class="btn-g" id="idCheckBtn">중복확인</button>
+      </div>
+      <span class="dn" id="idErrorSpan">5~12자의 영어 소문자/숫자 조합으로 입력해주세요.</span>
+    </div>
+
+    <!-- 비밀번호 -->
+    <div class="inp-gaib-box inp-pw mb20">
+      <input class="inp-gaib" id="password" name="password" placeholder="비밀번호를 입력해주세요."
+             type="password">
+      <button class="icon-on-off" name="toggleBtn">
+        <p class="icon-pw-off"></p>
+      </button>
+      <span class="dn" id="passwordErrorSpan">6~16자의 영문/숫자/특수문자(선택) 조합으로 입력해주세요.</span>
+    </div>
+
+    <!-- 비밀번호 확인 -->
+    <div class="inp-gaib-box inp-pw mb20">
+      <input class="inp-gaib" id="checkPassword" name="checkPassword"
+             placeholder="비밀번호를 한번 더 입력해주세요."
+             type="password">
+      <button class="icon-on-off" name="toggleBtn">
+        <p class="icon-pw-off"></p>
+      </button>
+      <span class="dn" id="checkPasswordErrorSpan">입력한 비밀번호가 일치하지않습니다.</span>
+    </div>
+
+    <!-- 이메일 -->
+    <div class="inp-gaib-box inp-gaib-email mb20">
+      <div class="df-jcsb">
+        <input class="inp-gaib" id="email" name="email" placeholder="이메일을 입력해주세요." type="text">
+      </div>
+      <span class="dn" id="emailErrorSpan">이메일 형식이 올바르지 않습니다.</span>
+    </div>
+
+    <!-- 이름 -->
+    <div class="inp-gaib-box inp-gaib-name mb20">
+      <div class="df-jcsb">
+        <input class="inp-gaib" id="userName" name="userName" placeholder="이름을 입력해주세요." type="text">
+      </div>
+      <span class="dn" id="userNameErrorSpan">이름은 2자이상의 영어 또는 한글만 입력가능합니다.</span>
+    </div>
+
+    <!-- 지번 -->
+    <div class="inp-gaib-box inp-gaib-addr01 mb20 dn">
+      <div class="df-jcsb">
+        <input class="inp-gaib w80p" disabled id="zipcd" name="zipcd"
+               placeholder="주소 검색 버튼으로 입력해주세요." type="text">
+        <button class="btn-g" onclick="fn_openDaumPostcode('layer','600','500');">주소 검색</button>
+      </div>
+      <span class="dn" id="zipcdErrorSpan">주소 검색 버튼으로 입력해주세요.</span>
+    </div>
+
+    <!-- 주소 -->
+    <div class="inp-gaib-box inp-gaib-addr02 mb30 dn">
+      <div class="df-jcsb">
+        <input class="inp-gaib" disabled id="addr" name="addr" placeholder="주소 검색 버튼으로 입력해주세요."
+               type="text">
+      </div>
+      <span class="dn" id="addrErrorSpan">주소 검색 버튼으로 입력해주세요.</span>
+    </div>
+
+    <!-- 주소 상세 -->
+    <div class="inp-gaib-box inp-gaib-addr02 mb30">
+      <div class="df-jcsb">
+        <input class="inp-gaib" id="detailAddr" name="detailAddr" placeholder="휴대폰 번호를 입력해 주세요"
+               type="text">
+      </div>
+      <span class="dn" id="detailAddrErrorSpan">휴대폰 번호 형식이 올바르지 않습니다.</span>
+    </div>
+
+    <button class="btn-login" id="joinBtn" name="joinBtn" type="button">회원가입</button>
+    <div class="space-x-4 mt30 df-jcc">
+      <span>이미 회원가입 하셨나요?</span>
+      <button class="btn-g" id="loginBtn" name="loginBtn" type="button">로그인</button>
+    </div>
+
+    <div class="copyright">
+      <p class="label-m">rtojtAdmin@runtime.co.kr<br>@2024 RUNTIME All Rights Reserved</p><br><br>
+      <p class="label-m">v1.0.0</p>
+    </div>
+  </main>
+  <footer></footer>
+</wrap>
+</body>
+<!-- 주소 검색 iframe을 넣을 element -->
+<div id="layer"
+     style="display:none; position:fixed; overflow:hidden; z-index:1; -webkit-overflow-scrolling:touch;"></div>
+</html>

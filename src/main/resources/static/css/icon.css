@@ -1,0 +1,26 @@
+.ico-crown {
+  content: url("../assets/icon/ico_crown.png");
+}
+
+.ico-pix {
+  content: url("../assets/icon/ico_pix.png");
+}
+
+.ico-arrow-04 {
+  content: url("../assets/icon/ico_arr_04.png");
+}
+
+.ico-eye-off {
+  content: url("../assets/icon/ico_eye-slash.png");
+}
+
+.ico-sch::before {
+  background: url("../assets/icon/ico_sch.png");
+}
+
+.ico-erase {
+  content: url("../assets/icon/icon-erase.png");
+}
+
+
+/*# sourceMappingURL=icon.css.map */

@@ -1,0 +1,18 @@
+.ico {
+  &-crown {
+    content: url("../assets/icon/ico_crown.png");
+  }
+  &-pix {
+    content: url("../assets/icon/ico_pix.png");
+  }
+  &-arrow-04 {
+    content: url("../assets/icon/ico_arr_04.png");
+  }
+  &-eye-off {
+    content: url("../assets/icon/ico_eye-slash.png");
+  }
+
+  &-sch::before {
+    background: url("../assets/icon/ico_sch.png");
+  }
+}

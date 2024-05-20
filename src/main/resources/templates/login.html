@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="no-cache" http-equiv="cache-control"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<th:block th:replace="~{fragments/config :: ConfigFragment}"/>
+<!-- login.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  /*
+  * 1. callback으로 동기처리
+    2. promise로 동기처리
+    3. async, await로 동기처리
+  *
+  * */
+  let login = {
+    fn_init: function () {
+      $('#id').val('');
+      $('#pwd').val('');
+
+      // callFunc1(timer());
+      callFunc2();
+      //callFunc3();
+
+      //setInterval(closureFuc(), 1000);
+      let item = 1;
+      const callValue = (value)=> {
+        value = 5;
+        return value;
+      }
+
+      let obj = {
+        a:1,
+        b:2
+      }
+      const callReference = (obj2) =>{
+        obj2 = 10;
+        return obj2;
+      }
+
+
+      console.log(callValue(item));
+      console.log(item);
+      console.log(callReference(obj));
+      console.log(obj);
+    },
+    fn_event: function () {
+      // 로그인 버튼 클릭 시
+      $('#loginBtn').on('click', function () {
+        if (!validation()) {
+          return false;
+        }
+        const userId = $('#id').val();
+        const password = $('#pwd').val();
+        const data = {
+          userId,
+          password
+        }
+        $.ajax({
+          url: '/api/v1/login',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(data),
+          beforeSend: function () {
+            ui_common.fn_showLoading();
+          },
+          success: function (data, status, res) {
+            console.log(res);
+            common.saveAuthTokenToLoacalStorage(res);
+            common.fn_movePage('/main');
+          },
+          error: function (error) {
+            console.log(error);
+            ui_common.fn_showAlertModal('로그인 실패', '아이디와 비밀번호를 확인해주세요.');
+          },
+          complete: function () {
+            ui_common.fn_hideLoading();
+          }
+        })
+      });
+      // 회원가입 버튼 클릭 시
+      $('#registerBtn').on('click', function () {
+        common.fn_movePage('/register');
+      });
+      // 비밀번호 토글 버튼 클릭 시
+      $('button[name=toggleBtn]').on('click', function () {
+        let $input = $(this).prev();
+        let $p = $(this).find('p');
+        common.fn_pwdToggleEvnet($input, $p);
+      });
+      // 아이디 입력 시
+      $('#id').on('keyup', function () {
+        const userIdRegex = /\S+/;
+        const idValue = $(this).val().trim();
+        const $span = $('#idSpan');
+        common.fn_validateByRegex(idValue, $span, userIdRegex);
+      });
+      // 비밀번호 입력 시
+      $('#pwd').on('keyup', function (e) {
+        const pwdRegex = /\S+/;
+        const pwdValue = $(this).val().trim();
+        const $span = $('#pwdSpan');
+        common.fn_validateByRegex(pwdValue, $span, pwdRegex);
+        // 비밀번호 엔터 키 입력 시
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          $("#loginBtn").trigger('click');
+        }
+      })
+    },
+  }
+  $(function () {
+    login.fn_init();
+    login.fn_event();
+  })
+
+  // 밸리데이션
+  const validation = () => {
+    const fields = [
+      {id: 'id', errorSpan: 'idSpan'},
+      {id: 'pwd', errorSpan: 'pwdSpan'}
+    ];
+
+    const invalidField = fields.find(field => {
+      const value = $(`#${field.id}`).val().trim().length > 0;
+      const hasError = $(`#${field.errorSpan}`).hasClass('dn');
+      return !(value && hasError);
+    });
+
+    if (invalidField) {
+      $(`#${invalidField.errorSpan}`).removeClass('dn');
+      $(`#${invalidField.id}`).focus();
+      return false;
+    }
+
+    return true;
+  }
+
+  // timer 함수
+  let timer = () => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+        console.log('1초 끝');
+      }, 1000);
+    });
+  }
+
+  // callback
+  function callFunc1(func) {
+    console.log(1);
+    func().then(function(){
+      console.log(2);
+    });
+  }
+  // promise then
+  function callFunc2() {
+      console.log(1);
+      timer().then(function () {
+        console.log(2);
+      });
+  }
+  // async await
+  async function callFunc3() {
+    console.log(1);
+    await timer();
+    console.log(2);
+  }
+
+  function closureFuc(){
+    let number = 0;
+    return function () {
+      console.log(number);
+      number++;
+    }
+  }
+
+</script>
+<!-- login.html script e -->
+<head>
+  <title>로그인</title>
+</head>
+<body>
+
+<wrap class="login-wrap">
+  <main class="login-main pt50">
+    <div class="tit head-m pb24 mb40 bb">로그인</div>
+
+    <div class="inp-gaib-box inp-id mb20">
+      <input class="inp-gaib" id="id" name="id" placeholder="아이디를 입력해주세요." type="text">
+      <span class="dn" id="idSpan">아이디를 입력해주세요.</span>
+    </div>
+
+    <div class="inp-gaib-box inp-pw mb30">
+      <input class="inp-gaib" id="pwd" name="pwd" placeholder="비밀번호를 입력해주세요." type="password">
+      <button class="icon-on-off" name="toggleBtn">
+        <p class="icon-pw-off"></p>
+      </button>
+      <span class="dn" id="pwdSpan">비밀번호를 입력해주세요.</span>
+    </div>
+
+    <button class="btn-login" id="loginBtn" name="loginBtn" type="button">로그인 하기</button>
+    <div class="space-x-4 mt30 df-jcc">
+      <span>런타임 SBL Project 시작하기</span>
+      <button class="btn-g" id="registerBtn" name="registerBtn" type="button">회원가입</button>
+    </div>
+
+    <div class="copyright">
+      <p class="label-m">rtojtAdmin@runtime.co.kr<br>@2024 RUNTIME All Rights Reserved</p><br><br>
+      <p class="label-m">v1.0.0</p>
+    </div>
+
+  </main>
+</wrap>
+</body>
+</html>
