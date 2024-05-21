@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -28,6 +29,7 @@ public class UserResource extends Base {
 
     private final UserService userService;
     private final MailService mailService;
+
     // 권한 조회
     @GetMapping("/getAuth")
     public ResponseEntity<Boolean> auth(HttpSession session) {
@@ -68,6 +70,16 @@ public class UserResource extends Base {
     public ResponseEntity<Boolean> sendEmail(HttpSession session) {
 
         boolean result = mailService.mailSend(session);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    // 파일 업로드
+    @PostMapping("/upload")
+    public ResponseEntity<Boolean> fileUpload(@RequestBody MultipartFile file) throws Exception {
+        log.info("file------->{}", file);
+
+        boolean result = userService.fileUpload(file);
 
         return ResponseEntity.ok().body(result);
     }

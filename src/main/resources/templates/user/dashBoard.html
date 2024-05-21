@@ -94,6 +94,35 @@
           }
         });
       });
+
+      $('#fileUpload').on('click', function () {
+        const file = $('#imgFile')[0].files[0];
+        let formData = new FormData();
+        if (file !== undefined) {
+          formData.append('file', file);
+        }
+        $.ajax({
+          url: `/api/v1/user/upload`,
+          data: formData,
+          enctype: 'multipart/form-data',
+          processData: false,
+          contentType: false,
+          beforeSend: function (xhr) {
+            ui_common.fn_showLoading();
+            common.getHeaderToken(xhr);
+          },
+          success: function (data, status, res) {
+            common.saveAuthTokenToLoacalStorage(res);
+            console.log(data);
+          },
+          error: function (error) {
+            ajaxError(error);
+          },
+          complete: function () {
+            ui_common.fn_hideLoading();
+          }
+        });
+      });
     }
   }
   $(function () {
@@ -130,6 +159,9 @@
     </section>
     <button class="btn-orange200 body-l" id="chartImage">이미지 파일화</button>
     <button class="btn-orange200 body-l" id="sendMail">메일 보내기</button>
+    <br>
+    <input type="file" id="imgFile">
+    <button class="btn-orange200 body-l" id="fileUpload">파일 업로드</button>
   </main>
 </wrap>
 </body>
