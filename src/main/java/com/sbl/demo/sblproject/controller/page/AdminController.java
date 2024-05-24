@@ -40,4 +40,14 @@ public class AdminController extends Base {
         return "/admin/userDetail";
     }
 
+    @GetMapping("/editor")
+    public String editor(HttpSession session){
+        User user = getUser(session);
+        if (NullHelper.isNull(user)) {
+            return "/login";
+        }
+        return "/admin/editor";
+    }
+
+
 }

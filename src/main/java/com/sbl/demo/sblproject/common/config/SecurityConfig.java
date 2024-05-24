@@ -38,6 +38,7 @@ public class SecurityConfig {
         "/management",
         "/permission",
         "/masterData",
+        "/editor",
         "/user-detail/*",
         "/assets/**",
         "/vendor/**",

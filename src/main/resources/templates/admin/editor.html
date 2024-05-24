@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="no-cache" http-equiv="cache-control"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- header s -->
+<th:block th:replace="~{fragments/header :: HeaderFragment}"></th:block>
+<!-- header e -->
+<!-- editor.html script s -->
+<script th:inline="javascript" type="text/javascript">
+  /*
+  * Ckeditor 를 활용 [외부 라이브러리에 대한 이해]
+  * */
+  let boardWrite = {
+    editor: {},
+    fn_init: function () {
+      if (CKEDITOR.env.ie && CKEDITOR.env.version < 9) {
+        CKEDITOR.tools.enableHtml5Elements(document);
+      }
+
+      CKEDITOR.config.height = 300;
+      CKEDITOR.config.width = 'auto';
+
+      initSample();
+    },
+    fn_event: function () {
+      // 페이지에서 나가려고 할때
+      $('#cancel1, #cancel2').on('click', function () {
+        ui_common.fn_showConfirmModal('여기서 나가시겠습니까?', '저장하지 않고 나갈 경우, 편집한 내용이 저장되지 않습니다');
+        ui_common.fn_setNewEvent('btnConfirm', function () {
+          common.fn_movePage('/board');
+        });
+      });
+
+      // 제목 입력 시
+      $('#title').on('keyup', function () {
+        const titleRegex = /\S+/;
+        const titleValue = $(this).val().trim();
+        const $span = $('#titleErrorSpan');
+        common.fn_validateByRegex(titleRegex, $span, titleValue);
+      })
+    }
+  }
+  $(function () {
+    boardWrite.fn_init();
+    boardWrite.fn_event();
+  });
+
+
+
+  let initSample = (function () {
+    let wysiwygareaAvailable = isWysiwygareaAvailable(),
+        isBBCodeBuiltIn = !!CKEDITOR.plugins.get('bbcode');
+
+    return function () {
+      let editorElement = CKEDITOR.document.getById('editor');
+
+      // :(((
+      if (isBBCodeBuiltIn) {
+        editorElement.setHtml(
+            'Hello world!\n\n' +
+            'I\'m an instance of [url=https://ckeditor.com]CKEditor[/url].'
+        );
+      }
+
+      // Depending on the wysiwygarea plugin availability initialize classic or inline editor.
+      if (wysiwygareaAvailable) {
+        CKEDITOR.replace('editor');
+      } else {
+        editorElement.setAttribute('contenteditable', 'true');
+        CKEDITOR.inline('editor');
+
+        // TODO we can consider displaying some info box that
+        // without wysiwygarea the classic editor may not work.
+      }
+    };
+
+    function isWysiwygareaAvailable() {
+      // If in development mode, then the wysiwygarea must be available.
+      // Split REV into two strings so builder does not replace it :D.
+      if (CKEDITOR.revision == ('%RE' + 'V%')) {
+        return true;
+      }
+
+      return !!CKEDITOR.plugins.get('wysiwygarea');
+    }
+  })();
+</script>
+<!-- editor.html script e -->
+<head>
+  <title>게시판 작성</title>
+</head>
+<body>
+<input disabled id="atchFlGrpPk" type="hidden">
+<wrap class="wrap">
+  <main class="main">
+    <section class="sec01">
+      <div>
+        <span class="ico-pix">nest_eco_leaf</span>
+        <span>게시판</span>
+        <span class="material-icons fz-14">chevron_right</span>
+        <span>게시글 작성</span>
+      </div>
+
+      <div class="df-jcsb pt8">
+        <div class="df">
+          <div class="prv-b" id="cancel1">
+            <span class="ico-arrow-04"></span>
+          </div>
+          <div class="title-l pl8">게시글 작성</div>
+        </div>
+
+        <div class="space-x-2">
+          <button class="btn-g" id="cancel2">취소</button>
+          <button class="btn-orange" id="save">저장</button>
+        </div>
+      </div>
+
+      <div class="inp-box">
+        <div class="tit">제목</div>
+        <input class="inp w100p" id="title" name="title" placeholder="제목을 입력해주세요." type="text">
+        <span class="dn" id="titleErrorSpan">제목을 입력해주세요.</span>
+      </div>
+      <div class="editor-box">
+        <div id="toolbar-container"></div>
+        <div id="editor"></div>
+      </div>
+
+    </section>
+  </main>
+</wrap>
+
+</body>
+</html>
